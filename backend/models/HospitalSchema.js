@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const doctorSchema = require("./DoctorSchema");
+const doctorModel = require("./DoctorSchema");
 
 const hospitalSchema = new mongoose.Schema(
   {
@@ -79,7 +80,9 @@ const hospitalSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    DoctorDetail: [doctorSchema],
+    DoctorDetail: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "doctorModel" }
+    ],
   },
   { collection: "doctor" }
 );

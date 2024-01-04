@@ -1,81 +1,44 @@
-const express = require("express");
-const bodyParser = require("body-parser");
+const app = require("./app/app");
+const dotenv = require("dotenv");
+const connectDatabase = require("./helperFunctions/dbConnect");
+const { Signup, Login } = require("./routes/HospitalAuth");
+const bp = require("body-parser");
 const cors = require("cors");
-require("dotenv").config();
-const mongoose = require("mongoose");
-const hModel = require("./models/HospitalSchema");
-const uri = process.env.CONNECTION_URI;
+const { verifyToken } = require("./jwt/tokenVerifier");
+const { decode } = require("jsonwebtoken");
+const hospitalModel = require("./models/HospitalSchema");
 
-const app = express();
-
-app.use(bodyParser.json());
+dotenv.config({ path: "config/config.env" });
 app.use(cors());
+app.use(bp.json());
 
-mongoose
-  .connect(uri)
-  .then((res) => {
-    console.log("got Connected");
-  })
-  .catch((err) => {
-    console.log("Not Connected\n", err);
-  });
+connectDatabase();
 
-async function add() {
-  const dct = new hModel({
-    HospitalDetail: {
-      name: "something",
-      govtID: "126381fkjg",
-      contactno: 1234567890,
-      email: "abcd@example.com",
-    },
-    AddressDetail: {
-      line1: "Hostel 26",
-      line2: "BIT Sindri",
-      state: "Jharkhand",
-      district: "Dhanbad",
-      pin: 828122,
-      coordinates: {
-        lati: 23.381923,
-        longi: 34.323433,
-      },
-    },
-    SPOCDetail: {
-      firstname: "Aditya",
-      lastname: "Ranjan",
-      mobile: 9999999999,
-      email: "arsrivastawa2710@gmail.com",
-    },
-    password: "qwertyui.gfdrtHBHGRTYT^7Re45yF",
-    salt: "qwertyui.",
-    DoctorDetail: [
-      {
-        firstname: "Shashank",
-        lastname: "Shekhar",
-        mobile: 8888888887,
-        email: "doctor@gmail.com",
-        specialization: "Nephrologist",
-        medicalLicenseNo: "NMCXMCI3179",
-        address: {
-          line1: "Ganja Gali",
-          line2: "Kasayin Muhalla",
-          district: "Dhanabad",
-          state: "Jharkhand",
-          pin: 826001,
-        },
-        arrivingTime: new Date(1, 1, 2023, 9, 30),
-        departingTime: new Date(1, 1, 2023, 22, 15),
-        presence: true,
-      },
-    ],
-  });
-  return dct.save();
-}
-
-app.post("/aiseHi", (req, res) => {
-  console.log("ha ji aa gaya");
-  res.json({ done: "Got the Response" });
+app.post("/signup", (req, res) => {
+  Signup(req, res);
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("Server Started");
+app.post("/user", async (req, res) => {
+  const { token } = req.body;
+  const decoded = verifyToken(token);
+  const found = await hospitalModel.findOne({
+    userID: decoHospitalSchemaded.userID,
+  });
+  if (found) {
+    res.status(200).json({
+      username: found.name,
+      useremail: found.email,
+      uid: found.userID,
+    });
+  }
 });
+
+app.post("/login", (req, res) => {
+  console.log(req.headers);
+  Login(req, res);
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Server Started on ", process.env.PORT);
+});
+//
